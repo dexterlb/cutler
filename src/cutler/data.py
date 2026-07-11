@@ -43,6 +43,7 @@ class Settings:
     max_parallel_cmds: int = 8  # determined by fair dice roll
     # command overrides may be either a string (simple command) or list (command with args)
     command_override: dict[str, Any] = field(default_factory=dict)
+    just_print: bool = False
 
 
 @dataclass

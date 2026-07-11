@@ -27,7 +27,7 @@ async def render_job(ctx: Ctx, job: Job):
     out = ffmpeg.overwrite_output(out)
     args = ["ffmpeg"] + out.get_args()
 
-    await exec_cmd(ctx, f"ffmpeg render {os.path.basename(job.out_filename)}", args)
+    await exec_cmd(ctx, f"ffmpeg render {os.path.basename(job.out_filename)}", args, use_out=False)
 
 
 async def exec_chain(ctx: Ctx, chain: Chain, chain_results: dict[str, Lazy[Source]]):

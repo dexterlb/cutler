@@ -64,6 +64,13 @@ from cutler.parse_vars import (
     metavar="NAME VALUE",
     help="Override the command NAME (argv[0]) with VALUE (a JSON list may be given). Repeatable.",
 )
+@click.option(
+    "--just-print",
+    "just_print",
+    is_flag=True,
+    default=False,
+    help="Print each command instead of running it. Aborts if a command's output is needed.",
+)
 def main(
     recipe_path,
     var_args,
@@ -73,6 +80,7 @@ def main(
     ffmpeg_command,
     ffprobe_command,
     override_commands,
+    just_print,
 ):
     data = vars_from_click_arg(var_args)
 
@@ -85,6 +93,8 @@ def main(
 
     if max_parallel_cmds is not None:
         recipe.settings.max_parallel_cmds = max_parallel_cmds
+
+    recipe.settings.just_print = just_print
 
     if ffmpeg_command is not None:
         recipe.settings.command_override["ffmpeg"] = coerce(ffmpeg_command)

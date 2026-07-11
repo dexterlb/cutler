@@ -32,6 +32,7 @@ class ReadClip:
                     ctx,
                     f"generate input {os.path.basename(self.filename)}",
                     self.gen_cmd,
+                    use_out=self.filename is None
                 )
 
                 if self.filename is None:

@@ -8,7 +8,7 @@ class Ctx:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.cmd_semaphore = asyncio.Semaphore(settings.max_parallel_cmds)
-        self.display = Display()
+        self.display = Display(enabled=not settings.just_print)
 
     def __enter__(self):
         self.display.__enter__()

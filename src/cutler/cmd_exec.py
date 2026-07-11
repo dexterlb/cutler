@@ -7,8 +7,17 @@ import sys
 __newline = re.compile(r"[\r\n]")
 
 
-async def exec_cmd(ctx, name, args):
+async def exec_cmd(ctx, name, args, use_out=True):
     args = _override_cmd(ctx.settings.command_override, args)
+
+    if ctx.settings.just_print:
+        print(shlex.join(args))
+        if use_out:
+            sys.stderr.write(f"failed cmd {name}\ncmd: {shlex.join(args)}\n")
+            sys.stderr.flush()
+            os._exit(1)
+        return
+
     async with ctx.cmd_semaphore:
         row = ctx.display.add(name)
 
@@ -35,12 +44,16 @@ async def exec_cmd(ctx, name, args):
 
         if proc.returncode != 0:
             ctx.display.stop()  # tear down the live region so the terminal is usable
-            sys.stderr.write(f"failed cmd {name}\ncmd: {shlex.join(args)}\nstderr:\n{stderr}\n")
+            sys.stderr.write(
+                f"failed cmd {name}\ncmd: {shlex.join(args)}\nstdout:\n{stdout}\nstderr:\n{stderr}\n"
+            )
             sys.stderr.flush()
             os._exit(1)  # FIXME: wait for other tasks to complete
 
         ctx.display.done(row)
-        return stdout
+
+        if use_out:
+            return stdout
 
 
 def _override_cmd(command_override, args):

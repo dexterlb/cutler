@@ -19,7 +19,8 @@ class Display:
     the terminal stays fully scrollable (we never use the alternate screen).
     """
 
-    def __init__(self):
+    def __init__(self, enabled=True):
+        self._enabled = enabled
         self._active = {}  # key -> [name, last_line]
         self._order = []
         self._counter = 0
@@ -41,8 +42,9 @@ class Display:
         return Group(*lines)
 
     def __enter__(self):
-        self._live.start()
-        self._started = True
+        if self._enabled:
+            self._live.start()
+            self._started = True
         return self
 
     def __exit__(self, *exc):
@@ -54,6 +56,8 @@ class Display:
             self._started = False
 
     def add(self, name):
+        if not self._enabled:
+            return None
         key = self._counter
         self._counter += 1
         self._active[key] = [name, ""]
@@ -62,10 +66,14 @@ class Display:
         return key
 
     def update(self, key, last_line):
+        if not self._enabled:
+            return
         self._active[key][1] = last_line
         self._live.update(self._render())
 
     def done(self, key):
+        if not self._enabled:
+            return
         name = self._active.pop(key)[0]
         self._order.remove(key)
         # permanent line, printed above the live region so it scrolls into history
