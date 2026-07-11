@@ -13,7 +13,7 @@ from cutler.cmd_exec import exec_cmd
 @dataclass
 class ReadClip:
     filename: str
-    gen_cmd: list[str]
+    gen_cmd: Optional[list[str]] = None
     gen_overwrite: bool = True
     looped: bool = False
     fmt: Optional[str] = None

@@ -34,7 +34,7 @@ class Display:
         lines = []
         for key in self._order:
             name, last = self._active[key]
-            line = Text.assemble((f"{name}: ", "bold cyan"), last)
+            line = Text.assemble((f"{name}: ", "cyan"), last)
             line.no_wrap = True
             line.overflow = "ellipsis"
             lines.append(line)
@@ -69,5 +69,5 @@ class Display:
         name = self._active.pop(key)[0]
         self._order.remove(key)
         # permanent line, printed above the live region so it scrolls into history
-        self._live.console.print(Text.assemble((name, "bold green"), (" - done", "green")))
+        self._live.console.print(Text.assemble((name, "green"), (" - done", "green")))
         self._live.update(self._render())
