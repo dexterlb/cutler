@@ -23,7 +23,11 @@ async def render_job(ctx: Ctx, job: Job):
     out_results = await get_chain_results(chain_results, job.outs)
     out_strms = [r.strm for r in out_results]
 
-    out = ffmpeg.output(*out_strms, job.out_filename, **job.out_opts)
+    out_opts = job.out_opts
+    if ctx.settings.max_ffmpeg_threads is not None:
+        out_opts['threads'] = ctx.settings.max_ffmpeg_threads
+
+    out = ffmpeg.output(*out_strms, job.out_filename, **out_opts)
     out = ffmpeg.overwrite_output(out)
     args = ["ffmpeg"] + out.get_args()
 

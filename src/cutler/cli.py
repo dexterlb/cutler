@@ -45,6 +45,14 @@ from cutler.parse_vars import (
     help="Override the recipe's max_parallel_cmds setting.",
 )
 @click.option(
+    "-t",
+    "--max-ffmpeg-threads",
+    "max_ffmpeg_threads",
+    type=int,
+    default=None,
+    help="Override the recipe's max_ffmpeg_threads setting.",
+)
+@click.option(
     "--ffmpeg-command",
     "ffmpeg_command",
     default=None,
@@ -77,6 +85,7 @@ def main(
     records_csv_file,
     records_jsonl_file,
     max_parallel_cmds,
+    max_ffmpeg_threads,
     ffmpeg_command,
     ffprobe_command,
     override_commands,
@@ -93,6 +102,9 @@ def main(
 
     if max_parallel_cmds is not None:
         recipe.settings.max_parallel_cmds = max_parallel_cmds
+
+    if max_ffmpeg_threads is not None:
+        recipe.settings.max_ffmpeg_threads = max_ffmpeg_threads
 
     recipe.settings.just_print = just_print
 
