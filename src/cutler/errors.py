@@ -1,5 +1,6 @@
 from cutler.context import Ctx
 from cutler.data import Job
+import os
 
 class JobError(Exception):
     """An error that fails a single job.
@@ -19,6 +20,9 @@ def handle_job_error(ctx: Ctx, job: Job, err: JobError):
         ctx.display.log(err.short)
         return
 
+    if ctx.settings.clear_out_file_on_cancel:
+        remove_quietly(job.out_filename)
+
     fail_path = f"{job.out_filename}.fail"
     try:
         with open(fail_path, "w") as f:
@@ -29,3 +33,9 @@ def handle_job_error(ctx: Ctx, job: Job, err: JobError):
         return
 
     ctx.display.log(f"{err.short}; wrote {fail_path}")
+
+def remove_quietly(path):
+    try:
+        os.remove(path)
+    except OSError:
+        pass
