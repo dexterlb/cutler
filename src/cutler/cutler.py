@@ -3,6 +3,7 @@ import ffmpeg
 import os
 
 from cutler.data import Chain, Source, Job, Recipe
+from cutler.errors import JobError, handle_job_error
 from cutler import context
 from cutler.context import Ctx
 from cutler.lazy import Lazy
@@ -15,6 +16,17 @@ async def exec_recipe(recipe: Recipe):
 
 
 async def render_job(ctx: Ctx, job: Job):
+    try:
+        await _render_job(ctx, job)
+    except JobError as err:
+        handle_job_error(ctx, job, err)
+    except asyncio.CancelledError:
+        if ctx.settings.clear_out_file_on_cancel:
+            _remove_quietly(job.out_filename)
+        raise
+
+
+async def _render_job(ctx: Ctx, job: Job):
     chain_results = {
         chain_name: Lazy(lambda chain=chain: exec_chain(ctx, chain, chain_results))
         for chain_name, chain in job.chains.items()
@@ -31,7 +43,20 @@ async def render_job(ctx: Ctx, job: Job):
     out = ffmpeg.overwrite_output(out)
     args = ["ffmpeg"] + out.get_args()
 
+    out_dir = os.path.dirname(job.out_filename)
+    if out_dir:
+        try:
+            os.makedirs(out_dir, exist_ok=True)
+        except OSError as e:
+            raise JobError(f"could not create output directory {out_dir}: {e}")
+
     await exec_cmd(ctx, f"ffmpeg render {os.path.basename(job.out_filename)}", args, use_out=False)
+
+def _remove_quietly(path):
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 async def exec_chain(ctx: Ctx, chain: Chain, chain_results: dict[str, Lazy[Source]]):

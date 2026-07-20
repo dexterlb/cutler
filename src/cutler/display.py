@@ -1,4 +1,4 @@
-from rich.console import Group
+from rich.console import Console, Group
 from rich.live import Live
 from rich.text import Text
 
@@ -24,8 +24,13 @@ class Display:
         self._active = {}  # key -> [name, last_line]
         self._order = []
         self._counter = 0
+        # status output goes to stderr (stdout is reserved for --just-print);
+        # using this console for the live region lets us print permanent lines
+        # (done/failed/log) above it without corrupting the display
+        self._console = Console(stderr=True)
         self._live = Live(
             self._render(),
+            console=self._console,
             transient=True,  # the (empty) live region is cleared on stop
             refresh_per_second=12,
         )
@@ -79,3 +84,17 @@ class Display:
         # permanent line, printed above the live region so it scrolls into history
         self._live.console.print(Text.assemble((name, "green"), (" - done", "green")))
         self._live.update(self._render())
+
+    def failed(self, key):
+        if not self._enabled:
+            return
+        name = self._active.pop(key)[0]
+        self._order.remove(key)
+        # permanent line, printed above the live region so it scrolls into history
+        self._live.console.print(Text.assemble((name, "red"), (" - failed", "red")))
+        self._live.update(self._render())
+
+    def log(self, text):
+        # print a message to stderr; when the live region is active this prints
+        # above it (via the shared console) so the display stays intact
+        self._console.print(text)
