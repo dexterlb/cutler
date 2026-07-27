@@ -45,6 +45,8 @@ class Settings:
     # command overrides may be either a string (simple command) or list (command with args)
     command_override: dict[str, Any] = field(default_factory=dict)
     just_print: bool = False
+    # remove a job's output file if its ffmpeg render is cancelled before finishing
+    clear_out_file_on_cancel: bool = True
 
 
 @dataclass

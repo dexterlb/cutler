@@ -1,4 +1,5 @@
 import asyncio
+import sys
 
 import click
 
@@ -115,7 +116,11 @@ def main(
     for name, value in override_commands:
         recipe.settings.command_override[name] = coerce(value)
 
-    asyncio.run(exec_recipe(recipe))
+    try:
+        asyncio.run(exec_recipe(recipe))
+    except KeyboardInterrupt:
+        print("cancelled", file=sys.stderr)
+        sys.exit(130)
 
 
 if __name__ == "__main__":
