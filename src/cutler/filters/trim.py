@@ -59,8 +59,17 @@ class Trim:
         else:
             actual_duration = self.end - self.start
 
+        if source.kind == "video":
+            filter_name = 'trim'
+        elif source.kind == "audio":
+            filter_name = 'atrim'
+        else:
+            raise RuntimeError(
+                "unclear if this is an audio or video stream: use the get_audio or get_video filter before this one"
+            )
+
         return replace(
             source,
-            strm=ffmpeg.trim(source.strm, **args),
+            strm=ffmpeg.filter(source.strm, filter_name, **args),
             actual_duration=Lazy(lambda: actual_duration),
         )
