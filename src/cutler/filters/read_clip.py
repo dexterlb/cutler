@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 import json
 import os
@@ -16,6 +16,7 @@ class ReadClip:
     gen_cmd: Optional[list[str]] = None
     gen_overwrite: bool = True
     looped: bool = False
+    input_args: dict[str, str] = field(default_factory=dict)
     fmt: Optional[str] = None
     seek_start: Optional[float] = None
     seek_end: Optional[float] = None
@@ -47,17 +48,17 @@ class ReadClip:
                 raise RuntimeError("cannot specify both seek_start and duration")
             duration = self.seek_end - (self.seek_start or 0)
 
-        kwargs = {}
+        kwargs = self.input_args.copy()
         if self.fmt is not None:
             kwargs["f"] = self.fmt
         if duration is not None:
             kwargs["t"] = duration
         if self.seek_start is not None:
             kwargs["ss"] = self.seek_start
+        if self.looped:
+            kwargs["loop"] = 1
 
         strm = ffmpeg.input(self.filename, **kwargs)
-        if self.looped:
-            raise RuntimeError("not implemented (FIXME: pass loop arg to ffmpeg for this input)")
 
         probe = Lazy(lambda: self._ffprobe(ctx))
         if duration is None:
